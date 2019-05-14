@@ -15,10 +15,11 @@ cd ${0%/*} || exit 1    # run from this directory
 # Decompose
 runApplication decomposePar -allRegions
 
+
 # Agglomerate patch faces
 for i in bottomAir topAir
 do
-    mpirun -np 4 faceAgglomerate -region $i -dict constant/viewFactorsDict -parallel>   log.faceAgglomerate.$i 2>&1
+    mpirun -np 4 faceAgglomerate -region $i -parallel>   log.faceAgglomerate.$i 2>&1
 done
 
 # Generate view factors

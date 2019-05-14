@@ -54,6 +54,7 @@ int main(int argc, char *argv[])
     #include "createTime.H"
     #include "createNamedMesh.H"
 
+
     const word dictName("viewFactorsDict");
 
     #include "setConstantMeshDictionaryIO.H"
@@ -82,31 +83,40 @@ int main(int argc, char *argv[])
 
     label nCoarseFaces = 0;
 
-    forAllConstIter(dictionary, agglomDict, iter)
+    forAll(boundary, patchId)
     {
-        labelList patchIds = boundary.findIndices(iter().keyword());
-        forAll(patchIds, i)
+	const polyPatch& pp = boundary[patchId];
+    	//Info << "boundary: " << boundary[patchId].name() << endl;
+	bool defined=false;
+	dictionary dict_aux;
+        forAllConstIter(dictionary, agglomDict, iter)
         {
-            label patchI =  patchIds[i];
-            const polyPatch& pp = boundary[patchI];
-            if (!pp.coupled())
-            {
+	    if(pp.name()==iter().keyword())
+	    {
+		Info << "Agglomeration parameters are defined by user for: " << pp.name() << endl;
+		defined=true;break;
+	    }
+	}
+	if(defined) dict_aux=agglomDict.subDict(pp.name());
+	else dict_aux=agglomDict.subDict("rest_of_faces");
+  
+        if (!pp.coupled())
+        {
                 Info << "\nAgglomerating patch : " << pp.name() << endl;
                 pairPatchAgglomeration agglomObject
                 (
                     pp,
-                    agglomDict.subDict(pp.name())
+                    dict_aux
                 );
                 agglomObject.agglomerate();
-                finalAgglom[patchI] =
+                finalAgglom[patchId] =
                     agglomObject.restrictTopBottomAddressing();
 
-                if (finalAgglom[patchI].size())
+                if (finalAgglom[patchId].size())
                 {
-                    nCoarseFaces += max(finalAgglom[patchI] + 1);
+                    nCoarseFaces += max(finalAgglom[patchId] + 1);
                 }
-            }
-        }
+         }
     }
 
 
