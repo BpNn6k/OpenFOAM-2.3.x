@@ -10,69 +10,24 @@ FoamFile
     version     2.0;
     format      ascii;
     class       dictionary;
-    location    "constant/topAir";
     object      viewFactorsDict;
 }
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-writeViewFactorMatrix true;
+// Write agglomeration as a volScalarField with calculated boundary values
+writeFacesAgglomeration   true;
 
-writeFacesAgglomeration true;
+//Debug option
+debug                     0;
 
-writePatchViewFactors false;
+//Dump connectivity rays
+dumpRays                  false;
 
-topAir_to_heater
+// Per patch (wildcard possible) the coarsening level
+bottomAir_to_heater
 {
-    nFacesInCoarsestLevel 24;
-    featureAngle    10;
-}
-
-topAir_to_leftSolid
-{
-    nFacesInCoarsestLevel 20;
-    featureAngle    10;
-}
-
-topAir_to_rightSolid
-{
-    nFacesInCoarsestLevel 20;
-    featureAngle    10;
-}
-
-minX
-{
-    nFacesInCoarsestLevel 10;
-    featureAngle    10;
-}
-
-maxY
-{
-    nFacesInCoarsestLevel 40;
-    featureAngle    10;
-}
-
-minZ
-{
-    nFacesInCoarsestLevel 20;
-    featureAngle    10;
-}
-
-maxX
-{
-    nFacesInCoarsestLevel 10;
-    featureAngle    10;
-}
-
-maxZ
-{
-    nFacesInCoarsestLevel 20;
-    featureAngle    10;
-}
-
-rest_of_faces
-{
-    nFacesInCoarsestLevel 1;
-    featureAngle    10;
+    nFacesInCoarsestLevel     30;
+    featureAngle              10;
 }
 
 

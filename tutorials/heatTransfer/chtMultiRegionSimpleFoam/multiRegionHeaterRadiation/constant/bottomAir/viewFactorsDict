@@ -10,60 +10,69 @@ FoamFile
     version     2.0;
     format      ascii;
     class       dictionary;
+    location    "constant/bottomAir";
     object      viewFactorsDict;
 }
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-writeViewFactorMatrix     true;
-writeFacesAgglomeration   true;
-writePatchViewFactors     false;
+writeViewFactorMatrix true;
+
+writeFacesAgglomeration true;
+
+writePatchViewFactors false;
 
 bottomAir_to_heater
 {
-    nFacesInCoarsestLevel     30;
-    featureAngle              10;
+    nFacesInCoarsestLevel 30;
+    featureAngle    10;
 }
 
 bottomAir_to_leftSolid
 {
-    nFacesInCoarsestLevel     20;
-    featureAngle              10;
+    nFacesInCoarsestLevel 20;
+    featureAngle    10;
 }
 
 bottomAir_to_rightSolid
 {
-    nFacesInCoarsestLevel     20;
-    featureAngle              10;
+    nFacesInCoarsestLevel 20;
+    featureAngle    10;
 }
 
 minX
 {
-    nFacesInCoarsestLevel     10;
-    featureAngle              10;
+    nFacesInCoarsestLevel 10;
+    featureAngle    10;
 }
 
 minY
 {
-    nFacesInCoarsestLevel     30;
-    featureAngle              10;
+    nFacesInCoarsestLevel 30;
+    featureAngle    10;
 }
 
 minZ
 {
-    nFacesInCoarsestLevel     20;
-    featureAngle              10;
+    nFacesInCoarsestLevel 20;
+    featureAngle    10;
 }
 
 maxX
 {
-    nFacesInCoarsestLevel     10;
-    featureAngle              10;
+    nFacesInCoarsestLevel 10;
+    featureAngle    10;
 }
 
 maxZ
 {
-    nFacesInCoarsestLevel     20;
-    featureAngle              10;
+    nFacesInCoarsestLevel 20;
+    featureAngle    10;
+}
+
+rest_of_faces
+{
+    nFacesInCoarsestLevel 1;
+    featureAngle    10;
 }
 
 

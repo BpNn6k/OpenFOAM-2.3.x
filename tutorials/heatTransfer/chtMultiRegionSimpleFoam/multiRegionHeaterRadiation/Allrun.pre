@@ -20,5 +20,8 @@ do
     changeDictionary -region $i > log.changeDictionary.$i 2>&1
 done
 
+# Asses the size of the patch faces before the Agglomerate
+prefaceAgglomerate bottomAir topAir >  log.prefaceAgglomerate 2>&1
+
 
 # ----------------------------------------------------------------- end-of-file
