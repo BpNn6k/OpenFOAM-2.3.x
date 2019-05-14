@@ -92,6 +92,10 @@ int main(int argc, char *argv[])
             if (!pp.coupled())
             {
                 Info << "\nAgglomerating patch : " << pp.name() << endl;
+
+                // - Fatih:
+                Info << "\n\t Patch size : " << pp.size() << endl;
+
                 pairPatchAgglomeration agglomObject
                 (
                     pp,
@@ -110,11 +114,17 @@ int main(int argc, char *argv[])
     }
 
 
+    // - Fatih:
+    Info << "\nPatches not agglomerated : " << endl;
+
     // - All patches which are not agglomarated are identity for finalAgglom
     forAll(boundary, patchId)
     {
         if (finalAgglom[patchId].size() == 0)
         {
+            // - Fatih:
+            Info << "\t " << boundary[patchId].name() << endl;
+
             finalAgglom[patchId] = identity(boundary[patchId].size());
         }
     }
