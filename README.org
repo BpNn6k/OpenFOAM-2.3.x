@@ -1,11 +1,11 @@
 #                            -*- mode: org; -*-
 #
-#+TITLE:            OpenFOAM README for version 2.3.0
+#+TITLE:            OpenFOAM README for version 2.3.1
 #+AUTHOR:               The OpenFOAM Foundation
-#+DATE:                     9th February 2014
+#+DATE:                      22nd May 2015
 #+LINK:                  http://www.openfoam.org
-#+OPTIONS: author:nil ^:{}
-# Copyright (c) 2014 OpenFOAM Foundation.
+#+OPTIONS: author:ahmad ^:{}
+# Copyright (c) 2014-2015 OpenFOAM Foundation.
 
 * About OpenFOAM
   OpenFOAM is a free, open source computational fluid dynamics (CFD) software
@@ -23,18 +23,27 @@
   [[http://www.gnu.org/licenses/]], for a description of the GNU General Public
   License terms under which you can copy the files.
 
-* Download and installation instructions
-  + To install from this Git repository, see
-    [[http://www.OpenFOAM.org/git.php]]
+* [[http://www.OpenFOAM.org/git.php][Download and installation instructions]]
+* [[http://www.OpenFOAM.org/docs][Documentation]]
+* [[http://www.OpenFOAM.org/bugs][Reporting bugs in OpenFOAM]]
+* [[http://www.openfoam.org/contact][Contacting the OpenFOAM Foundation]]
 
-* Release notes
-  [[http://www.OpenFOAM.org/version2.3.0]]
-
-* Documentation
-  [[http://www.OpenFOAM.com/docs]]
-
-* Support and development contracts
-  [[http://www.OpenFOAM.com/support]]
-
-* Reporting Bugs in OpenFOAM
-  [[http://www.OpenFOAM.com/bugs]]
+* Improvements of faceAgglomerate utility:
+  In radiative heat transfer, a view factor is the proportion of the radiation which leaves surface i that hits surface j. 
+  The viewFactor radiation model in OpenFOAM computes the view factor matrix for each given region.
+  During the initial startup of the simulation, for each region, the viewFactor matrix is created and filled between all element faces of every patch with a line of sight. As a result, this model is very resource intensive. 
+  One solution is to agglomerate relevant faces together into larger polygons to reduce the required number of view factor faces.
+  The utility faceAgglomerate of OpenFoam was created to serve this purpose. 
+  There are two main drawbacks of this utility:
+    1. For each patch of every region, the configuration in viewFactorsDict requires specification of agglomeration parameters, which for cases with a vast number of patches, the user is required to set all these parameters for each patch manually!
+    2. There are no built-in robustness strategies to determine the agglomeration parameters in viewFactorsDict!
+  
+  The improvements made in this branch circumvent these two issues as: 
+    1. For the first issue, the user no longer needs to specify the agglomeration parameters for all the patches. The user now can specify these parameters for as many patches as required (including no patches at all). For the rest of the faces, the user can specify the agglomeration parameters by setting the dictionary rest_of_faces in viewFactorsDict, and these parameters will be taken into account for all the unspecified patches. 
+    2. For the second issue, A new utility (prefaceAgglomerate) is added to determine the agglomeration parameters based on the specified value of the memory that user allocates for viewFactor matrics of all the regions. 
+    User can specify this allocated memory in Megabytes in system/controlDict MaxMemoryForViewFactors. If not specified, a default value of 1000Mb will be used. 
+    This tool does not change the value of agglomeration parameters in viewFactorsDict for patches that the user explicitly specifies them. It just modifies the nFacesInCoarsestLevel parameter for rest_of_faces.
+    If needed, this tool must run before the faceAgglomerate utility.
+    
+  The test case in $FOAM_TUTORIALS/heatTransfer/chtMultiRegionSimpleFoam/multiRegionHeaterRadiation/ has been modified to use these new tools, accordingly. 
+  
