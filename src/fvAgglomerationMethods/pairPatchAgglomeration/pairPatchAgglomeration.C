@@ -40,7 +40,7 @@ void Foam::pairPatchAgglomeration::compactLevels(const label nCreatedLevels)
 bool Foam::pairPatchAgglomeration::continueAgglomerating
 (
     const label nCoarseFaces,
-    const int   minFacesForQuality
+    int   minFacesForQuality
 )
 {
     // Check the need for further agglomeration on all processors
