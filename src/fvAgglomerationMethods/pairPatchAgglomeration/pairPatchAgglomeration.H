@@ -119,7 +119,7 @@ private:
         bool continueAgglomerating
         (
             const label fineLevelIndex, 
-            const int minFacesForQuality
+            int minFacesForQuality
         );
 
         //- Set edge weights
