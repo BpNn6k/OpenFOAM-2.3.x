@@ -39,12 +39,23 @@ void Foam::pairPatchAgglomeration::compactLevels(const label nCreatedLevels)
 
 bool Foam::pairPatchAgglomeration::continueAgglomerating
 (
-    const label nCoarseFaces
+    const label nCoarseFaces,
+    const int   minFacesForQuality
 )
 {
     // Check the need for further agglomeration on all processors
     label localnCoarseFaces = nCoarseFaces;
-    bool contAgg = localnCoarseFaces >= nFacesInCoarsestLevel_;
+    bool contAgg = false;
+   
+    if 
+    ( 
+        localnCoarseFaces >= nFacesInCoarsestLevel_ 
+        && localnCoarseFaces >= minFacesForQuality 
+    )
+    {
+        contAgg = true;
+    }
+ 
     return contAgg;
 }
 
@@ -304,7 +315,6 @@ bool Foam::pairPatchAgglomeration::agglomeratePatch
     const label nCoarseI =  max(fineToCoarse)+1;
     List<face> patchFaces(nCoarseI);
 
-
     // Patch faces per agglomeration
     labelListList coarseToFine(invertOneToMany(nCoarseI, fineToCoarse));
 
@@ -363,12 +373,19 @@ bool Foam::pairPatchAgglomeration::agglomeratePatch
 }
 
 
-void Foam::pairPatchAgglomeration:: agglomerate()
+void Foam::pairPatchAgglomeration::agglomerate()
 {
     label nPairLevels = 0;
     label nCreatedLevels = 1; //0 level is the base patch
     label nCoarseFaces = 0;
     label nCoarseFacesOld = 0;
+
+    // - Fatih:
+    Info << "\t nFacesInCoarsestLevel : " << nFacesInCoarsestLevel_ << endl;
+    
+    // - Fatih: We don't want to keep aggloremating blatantly
+    int minFacesForQuality = patchLevels_[0].size() * 0.15;
+    Info << "\t minFacesForQuality    : " << minFacesForQuality << endl;
 
     while (nCreatedLevels < maxLevels_)
     {
@@ -378,20 +395,17 @@ void Foam::pairPatchAgglomeration:: agglomerate()
         bool agglomOK = false;
         while (!agglomOK)
         {
-            finalAgglomPtr = agglomerateOneLevel
-            (
-                nCoarseFaces,
-                patch
-            );
+            // - Fatih:
+            if (nPairLevels > 0)
+            {
+                Info << "\t\t nCoarseFaces  : " << nCoarseFaces << endl;
+            }
+                
+            finalAgglomPtr = agglomerateOneLevel(nCoarseFaces, patch);
 
             if (nCoarseFaces > 0)
             {
-                agglomOK = agglomeratePatch
-                (
-                    patch,
-                    finalAgglomPtr,
-                    nCreatedLevels
-                );
+                agglomOK = agglomeratePatch(patch, finalAgglomPtr, nCreatedLevels);
 
                 restrictAddressing_.set(nCreatedLevels, finalAgglomPtr);
                 mapBaseToTopAgglom(nCreatedLevels);
@@ -417,10 +431,10 @@ void Foam::pairPatchAgglomeration:: agglomerate()
 
         nFaces_[nCreatedLevels] = nCoarseFaces;
 
-        if
-        (
-            !continueAgglomerating(nCoarseFaces)
-          || (nCoarseFacesOld ==  nCoarseFaces)
+        if 
+        ( 
+            !continueAgglomerating(nCoarseFaces, minFacesForQuality) 
+            || (nCoarseFacesOld == nCoarseFaces) 
         )
         {
             break;
