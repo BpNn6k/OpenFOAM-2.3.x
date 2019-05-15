@@ -73,6 +73,7 @@ protected:
         //- Feature angle
         scalar featureAngle_;
 
+
         //- The number of faces in each level
         labelList nFaces_;
 
@@ -150,6 +151,8 @@ public:
     // Destructor
     ~pairPatchAgglomeration();
 
+        //- Flag to approximate a patch as a plane
+        bool isApproximatedPlane_;
 
     // Member Functions
 

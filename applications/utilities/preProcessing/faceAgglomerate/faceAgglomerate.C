@@ -84,29 +84,42 @@ int main(int argc, char *argv[])
 
     forAllConstIter(dictionary, agglomDict, iter)
     {
-        labelList patchIds = boundary.findIndices(iter().keyword());
-        forAll(patchIds, i)
+      labelList patchIds = boundary.findIndices(iter().keyword());
+      forAll(patchIds, i)
+      {
+        label patchI =  patchIds[i];
+        const polyPatch& pp = boundary[patchI];
+        if (!pp.coupled())
         {
-            label patchI =  patchIds[i];
-            const polyPatch& pp = boundary[patchI];
-            if (!pp.coupled())
-            {
-                Info << "\nAgglomerating patch : " << pp.name() << endl;
-                pairPatchAgglomeration agglomObject
-                (
-                    pp,
-                    agglomDict.subDict(pp.name())
-                );
-                agglomObject.agglomerate();
-                finalAgglom[patchI] =
-                    agglomObject.restrictTopBottomAddressing();
 
-                if (finalAgglom[patchI].size())
-                {
-                    nCoarseFaces += max(finalAgglom[patchI] + 1);
-                }
+          Info << "\nAgglomerating patch : " << pp.name() << endl;
+          pairPatchAgglomeration agglomObject
+            (
+             pp,
+             agglomDict.subDict(pp.name())
+            );
+          if(!agglomObject.isApproximatedPlane_){
+            // for patches identified as approximately plane
+            agglomObject.agglomerate();
+            finalAgglom[patchI] =
+              agglomObject.restrictTopBottomAddressing();
+
+            if (finalAgglom[patchI].size())
+            {
+              nCoarseFaces += max(finalAgglom[patchI] + 1);
             }
+          } else {
+            Info<< "Approximating as plane "<<endl;
+            labelList map(pp.size());
+            forAll(map,i)
+            {
+              map[i] =  1;
+            }
+            finalAgglom[patchI] = map;
+
+          }
         }
+      }
     }
 
 
@@ -154,46 +167,48 @@ int main(int argc, char *argv[])
 
     if (writeAgglom)
     {
-        globalIndex index(nCoarseFaces);
-        volScalarField facesAgglomeration
+      globalIndex index(nCoarseFaces);
+      volScalarField facesAgglomeration
         (
-            IOobject
-            (
-                "facesAgglomeration",
-                mesh.time().timeName(),
-                mesh,
-                IOobject::NO_READ,
-                IOobject::NO_WRITE
-            ),
-            mesh,
-            dimensionedScalar("facesAgglomeration", dimless, 0)
+         IOobject
+         (
+          "facesAgglomeration",
+          mesh.time().timeName(),
+          mesh,
+          IOobject::NO_READ,
+          IOobject::NO_WRITE
+         ),
+         mesh,
+         dimensionedScalar("facesAgglomeration", dimless, 0)
         );
 
-        label coarsePatchIndex = 0;
-        forAll(boundary, patchId)
+//Info << " hello world " ;
+      label coarsePatchIndex = 0;
+      forAll(boundary, patchId)
+      {
+        const polyPatch& pp = boundary[patchId];
+        if (pp.size() > 0)
         {
-            const polyPatch& pp = boundary[patchId];
-            if (pp.size() > 0)
-            {
-                fvPatchScalarField& bFacesAgglomeration =
-                    facesAgglomeration.boundaryField()[patchId];
+          fvPatchScalarField& bFacesAgglomeration =
+            facesAgglomeration.boundaryField()[patchId];
 
-                forAll(bFacesAgglomeration, j)
-                {
-                    bFacesAgglomeration[j] =
-                        index.toGlobal
-                        (
-                            Pstream::myProcNo(),
-                            finalAgglom[patchId][j] + coarsePatchIndex
-                        );
-                }
+          forAll(bFacesAgglomeration, j)
+          {
+            bFacesAgglomeration[j] =
+              index.toGlobal
+              (
+               Pstream::myProcNo(),
+               finalAgglom[patchId][j] + coarsePatchIndex
+              );
+          }
+//Info << " hello world d" ;
 
-                coarsePatchIndex += max(finalAgglom[patchId]) + 1;
-            }
+          coarsePatchIndex += max(finalAgglom[patchId]) + 1;
         }
+      }
 
-        Info<< "\nWriting facesAgglomeration" << endl;
-        facesAgglomeration.write();
+      Info<< "\nWriting facesAgglomeration" << endl;
+      facesAgglomeration.write();
     }
 
     Info<< "End\n" << endl;

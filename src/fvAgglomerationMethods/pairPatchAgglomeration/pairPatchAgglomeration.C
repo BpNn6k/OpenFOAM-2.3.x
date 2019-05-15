@@ -204,6 +204,10 @@ Foam::pairPatchAgglomeration::pairPatchAgglomeration
     (
         controlDict.lookupOrDefault<scalar>("featureAngle", 0)
     ),
+    isApproximatedPlane_
+    (
+        controlDict.lookupOrDefault<bool>("isApproximatedPlane", false)
+    ),
     nFaces_(maxLevels_),
     restrictAddressing_(maxLevels_),
     restrictTopBottomAddressing_(identity(patch.size())),
